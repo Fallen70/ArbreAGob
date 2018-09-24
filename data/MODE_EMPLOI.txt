@@ -1,0 +1,87 @@
+## Régles de nommage
+Tous les noms de fichiers et de dossier ne doivent pas contenir d'epace et / ou  de caratéres spéciaux 
+Il est important de faire attentions aux majuscules True et true ne sont pas égaux.
+
+## Structure de l'application
+ - /home/pi/application/arbreAGob contient tout le code de l'application a ne toucher que si on sait ce qu'on fait
+ - /home/pi/data/system contient les données systéme de l'application:
+   - il contient des sons ( utilisés au démarrage de l'application )
+   - index.csv qui permet de faire un mapping avec des évenement systéme
+   - switch.csv qui sert à la selection du dossier d'activité
+
+     format : CodeTouche;nomDuDossier;TypeActivite
+     ex: 103;naindows;digicode
+
+   - system.csv mapping des boutons systéme ( SHUTDOWN et RESET ) 
+ - /home/pi/data contient les données de l'application 
+   - Chaque autre dossier dans /home/pi/data contient les données pour une activité
+   - en plus des fichiers sons il faut :
+     - un fichier index.csv qui sert à faire le mapping entre un bouton et un son
+     - un fichier sequence.csv qui permet de gérer des séquences , utilisé pour le digicode
+
+
+## Dépot de fichier avec une clef usb
+ - Mettre la clef 
+ - Attendre la fenètre automatique qui propose de visionner le contenu
+ - copier les fichiers dans un dossier ( Le navigateur pour les dossier est en haut a droite )
+ - click droit sur le symbole eject ( au dessus du drapeau en bas à droite )
+ - selectionner la clef
+ - attendre le message de confirmation puis retirer la clef
+
+## Conversion des fichiers au format ogg
+ - S'assurer que le dossier /home/pi/convert est vide
+ - Lancer soundconverter
+   - bouton Démarrer ou clque sur la framboise en haut a droite
+   - menu "Son et Vidéo" -> "Sound Converter"
+ - Clique sur "Add Folder"
+ - Sélectionner le dossier contenant les fichiers a convertir ( tu dois voir tes fichiers sont en grisé )
+ - Clique sur "Open" 
+ - Une fois que le soft affiche "ready" clique sur convert
+ - le résultat sera dans /home/pi/convert/mondossier
+
+## Création d'une nouvelle activitée
+ - Dans le dossier /home/pi/data créer un dossier et y déposer les ogg a utiliser
+ - Dans ce dossier créer un fichier index.csv pour le mapping des touches
+   - ouvrir un terminal ( en haut a droite de l'explorateur de dossier )
+   - taper dans le terminal :
+
+cd /home/pi/data/monDossier
+ls *.ogg > index.csv.temp
+
+   - Vérifier le fichier index.csv.temp si il contient bien les noms des fichiers et le renommer en index.csv
+   - Fermer le terminal
+   - Double clique sur le fichier index.csv et ajouter le mapping des touches
+     format des lignes ( IdentifiantSequence est optionnel ) :
+
+    CodeTouche;NomFichierSon;IdentifiantSequence
+ex: 110;barbare-corbeille01.ogg;3
+
+   - Pour le digicode il y a des sons de victoitre en cas de découverte d'une séquence
+     il faut les ajouter dans ce fichier
+
+ex: win3;barbare-tavutatete.ogg
+
+  - Dans le même dossier Créer un fichier sequence.csv
+    pour le jukebox il suffit de créer un fichier sequence.csv vide
+    format des lignes :
+   
+  IdentifiantSequence;CodeTouche1,CodeTouche2,...,CodeTouche99#Ordonné#ModeJukBox#Victoire
+    IdentifiantSequence doit être reporté au lignes CodeTouche1,CodeTouche2,...,CodeTouche99 du fichier index.csv
+    CodeTouche1,CodeTouche2,...,CodeTouche99 : la liste des boutons a associés à cette séquence
+    Ordonné : soit True et on attends la série de touche dans l'ordre soit False et on s'en tape de l'ordre
+    ModeJukBox : soit True et le son précendent est coupé pour jouer les sons de cette séquence soit False et il est ajouté aux sons existant
+    Victoire : Code du son a jouer en cas de réussite, doit correspondre au CodeTouche d'une ligne du fichier index.csv
+
+ex: 3;110,102,104#True#True#win3
+
+  - Ce rendre dans /home/pi/data/system
+  - Ouvrir le fichier switch.csv
+  - ajotuer / modifier une ligne pour l'application ( 4 touches a notre disposition, donc pas plus de 4 ligne dans le fichier )
+  - format de la ligne:
+
+    CodeTouche;NomDossier;Activite
+ex: 106;barbare;digicode
+
+  - Activités dispo :
+    digicode -> sequence.csv obligatoire et rempli
+    jukebox -> sequence.csv pas utile mais le fichier doit exister
